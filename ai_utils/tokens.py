@@ -3,20 +3,24 @@ from ai_utils.config import get_settings
 from ai_utils.logger import get_logger
 
 logger = get_logger(__name__)
+_settings = get_settings()
 
-def count_tokens(text:str)-> int:
-    """
-    Counts the number of tokens in the given text using the tokenizer
-    for the specified model from settings.
-    """
-    settings = get_settings()
-    encoding = tiktoken.encoding_for_model(settings.model_name)
-    tokens = len(encoding.encode(text))
 
-    logger.info(
-        "Token count calculated",
-        extra={"tokens": tokens, "model": settings.model_name}
+def count_tokens(text: str) -> int:
+    encoding = tiktoken.encoding_for_model(_settings.model_name)
+    token_count = len(encoding.encode(text))
+
+    logger.debug(
+        "Token count computed",
+        extra={
+            "tokens": token_count,
+            "model": _settings.model_name,
+        },
     )
 
-    return tokens
-    
+    if token_count > _settings.max_input_tokens:
+        raise ValueError(
+            f"Input exceeds max token limit ({_settings.max_input_tokens})"
+        )
+
+    return token_count
